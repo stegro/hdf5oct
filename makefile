@@ -7,7 +7,7 @@ objs=$(src:.cc=.o)
 H5FLAGS=$(shell octave --eval 'exit(__octave_config_info__ ("build_features").HDF5 != 1)' &> /dev/null && echo "-DHAVE_HDF5") \
 $(shell octave --eval 'exit(__octave_config_info__ ("build_features").HDF5_18 != 1)' &> /dev/null && echo "-DHAVE_HDF5_18")
 
-MKOCTFILE=CXX="$(CXX)" CXXFLAGS="-ansi" mkoctfile -v -std=c++11 $(H5FLAGS)
+MKOCTFILE=CXX="$(CXX)" CXXFLAGS="-ansi -D_GLIBCXX_USE_CXX11_ABI=0" mkoctfile -v $(H5FLAGS)
 
 VERSION=0.4.0
 PACKAGEFILE=hdf5oct-$(VERSION).tar.gz
@@ -28,7 +28,7 @@ clean:
 
 install: $(PACKAGEFILE)
 	@echo "-- Install Octave Package ------------"
-	octave --silent --no-gui --eval "pkg install $(PACKAGEFILE)"
+	octave --texi-macros-file=/dev/null --silent --no-gui --eval "pkg install $(PACKAGEFILE)"
 
 uninstall:
 	@echo "-- Uninstall Octave Package ----------"
