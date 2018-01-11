@@ -1329,7 +1329,8 @@ H5File::read_att (const char *objname, const char *attname)
     }
   else if (H5Tget_class (type)==H5T_INTEGER)
     {
-      // Integer attributes are casted to floating point octave values
+          
+// Integer attributes are casted to floating point octave values
     
       double value[numVal];
       if (H5Tget_size (type)==sizeof (int))
@@ -1343,6 +1344,18 @@ H5File::read_att (const char *objname, const char *attname)
           for (size_t n=0;n<numVal;++n)
             value[n] = f_value[n]*1.0;
         }
+      else if (H5Tget_size (type)==sizeof (long int))
+        {
+          long int f_value[numVal];
+          if (H5Aread (att_id, H5T_NATIVE_LONG, f_value)<0)
+            {
+              error ("h5readatt: reading the given integer Attribute failed");
+              return retval;
+            }
+          for (size_t n=0;n<numVal;++n)
+            value[n] = f_value[n]*1.0;
+        }
+
       else
         {
           error ("h5readatt: reading the given integer Attribute failed: cannot handle size of type");
