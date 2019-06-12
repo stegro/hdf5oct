@@ -76,7 +76,7 @@ check_vec (const octave_value& val, Matrix& mat/*out*/,
   if (error_state)
     return 0;
 
-  if (! mat.isvector ())
+  if (! mat.is_vector ())
     {
       error ("%s must be a vector", name);
       return 0;
@@ -599,7 +599,7 @@ H5File::H5File (const char *filename, const bool create_if_nonexisting,
   //suppress hdf5 error output
   H5Eset_auto (H5E_DEFAULT,0,0);
 
-  octave::sys::file_stat fs (filename);
+  file_stat fs (filename);
   if (! fs.exists () && create_if_nonexisting)
     file = H5Fcreate (filename, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
   else if (! fs.exists () && ! create_if_nonexisting)
@@ -755,8 +755,8 @@ H5File::read_dset_hyperslab (const char *dsetname,
   if (open_dset (dsetname) < 0)
     return octave_value ();
 
-  if (rank == 0 && ! (start.isempty () && count.isempty ()
-                      && stride.isempty () && block.isempty ()))
+  if (rank == 0 && ! (start.is_empty () && count.is_empty ()
+                      && stride.is_empty () && block.is_empty ()))
     {
       error ("Cannot specify hyperslab for scalar datasets (rank 0)");
       return octave_value ();
@@ -1019,7 +1019,7 @@ H5File::write_dset (const char *dsetname,
 
   herr_t status;
   // find the right type
-  if (ov_data.iscomplex ())
+  if (ov_data.is_complex_type())
     {
       //check if the data set already exists. if it does, open it,
       //otherwise, create it.  Furthermore check if the datatype is
@@ -1045,7 +1045,7 @@ H5File::write_dset (const char *dsetname,
       ComplexNDArray data = ov_data.complex_array_value ();
       OPEN_AND_WRITE;
     }
-  else if (ov_data.isinteger ())
+  else if (ov_data.is_integer_type ())
     {
       if (ov_data.is_uint64_type ())
         {
@@ -1137,8 +1137,8 @@ H5File::write_dset_hyperslab (const char *dsetname,
     return;
 
   // check if the given hyperslab settings are reasonable
-  if (rank == 0 && ! (start.isempty () && count.isempty ()
-                      && stride.isempty () && block.isempty ()))
+  if (rank == 0 && ! (start.is_empty () && count.is_empty ()
+                      && stride.is_empty () && block.is_empty ()))
     {
       error ("Cannot specify hyperslab for scalar datasets (rank 0)");
       return;
@@ -1463,7 +1463,7 @@ H5File::write_att (const char *location, const char *attname,
       
       buf = (void *) attvalue.string_value ().c_str ();
     }
-  else if (attvalue.isinteger ())
+  else if (attvalue.is_integer_type ())
     {
       //type_id = H5Tcopy (H5T_STD_I64LE); //cannot read this back in then, don't know why
       type_id = H5Tcopy (H5T_NATIVE_INT);
@@ -1471,14 +1471,14 @@ H5File::write_att (const char *location, const char *attname,
       attval_int = attvalue.int_value ();
       buf = (void *) &attval_int;
     }
-  else if (attvalue.isreal ())
+  else if (attvalue.is_real_type ())
     {
       type_id = H5Tcopy (H5T_NATIVE_DOUBLE);
       mem_type_id = H5Tcopy (H5T_NATIVE_DOUBLE);
       attval_double = attvalue.double_value ();
       buf = (void *) &attval_double;
     }
-  else if (attvalue.iscomplex ())
+  else if (attvalue.is_complex_type ())
     {
       error ("complex values are not supported by the HDF5 format. \
 You have to save real and imag part separately.");
@@ -1575,14 +1575,14 @@ H5File::create_dset (const char *location, const Matrix& size,
   free (dims);
   free (maxdims);
 
-  if (any_int_leq_zero (size) && chunksize.isempty ())
+  if (any_int_leq_zero (size) && chunksize.is_empty())
     {
       error ("If the size argument contains an Inf or zero element, then ChunkSize must be specified.");
       return;
     }
   // get a dataset creation property list
   hid_t crp_list = H5Pcreate (H5P_DATASET_CREATE);
-  if (! chunksize.isempty ())
+  if (! chunksize.is_empty())
     {
       // a dataset with an unlimited dimension must be chunked.
       if (chunksize(0) == 0)
